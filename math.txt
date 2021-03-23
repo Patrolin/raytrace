@@ -1,0 +1,16 @@
+function Perp():Vec2D {
+    return Vec2D(-fY, fX);
+}
+function Dot(v2:Vec2D):Number {
+    return fX * v2.fX + fY * v2.fY;
+}
+function PerpDot(v2:Vec2D):Number {
+    return Perp().Dot(v2);
+}
+// version with the operations inlined
+function PerpDot(v2:Vec2D):Number {
+    return -fY * v2.fX + fX * v2.fY;
+}
+function Hadamard(v2:Vec2D):Vec2D {
+    return Vec2D(fX * v2.fX, fY * v2.fY);
+}
