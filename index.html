@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<style>
+  html,
+  body,
+  canvas {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: #888;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
+</style>
+<script>
+  utf8 = new TextDecoder();
+  function getBytes(ptr, len) {
+    return new Uint8ClampedArray(instance.exports.memory.buffer, ptr, len);
+  }
+  imports = {
+    printInt: (int) => console.log(int),
+    printFloat: (float) => console.log(float),
+    printString: (ptr, len) => console.log(utf8.decode(getBytes(ptr, len))),
+    printBytes: (ptr, len) => console.log(getBytes(ptr, len))
+  };
+  async function init() {
+    var memory = new WebAssembly.Memory({ initial: 10, maximum: 200 });
+    var module = await WebAssembly.instantiateStreaming(
+      fetch('zig-cache/bin/main.wasm'),
+      { js: { mem: memory }, env: imports }
+    );
+    instance = module.instance;
+    exports = instance.exports;
+    //exports.memory.grow(150);
+    canvas = document.querySelector('canvas');
+    ctx = canvas.getContext('2d');
+  }
+
+  async function main() {
+    await init();
+    requestAnimationFrame(render);
+  }
+  function render() {
+    var width = 160;
+    var height = 160;
+    canvas.width = width;
+    canvas.height = height;
+    var buffer_ptr = exports.render(width, height);
+    var buffer = getBytes(buffer_ptr, width * height * 4);
+    ctx.putImageData(new ImageData(buffer, width), 0, 0);
+    //requestAnimationFrame(render);
+  }
+  document.addEventListener('DOMContentLoaded', main);
+</script>
+<canvas></canvas>

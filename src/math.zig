@@ -34,6 +34,7 @@ pub fn a_sqrt(x: f32) f32 {
 
 pub const isqrt_bias: i32 = (-127 * 1 << 22) - (127 * 1 << 23);
 pub fn a_isqrt(x: f32) f32 {
+    // TODO: account for not quite logarithmic nature of floats
     //var half_x = x * 0.5;
 
     // -1/2 * log2(x) = log2(1/sqrt(x))
@@ -48,14 +49,14 @@ pub fn a_isqrt(x: f32) f32 {
     return y; // y = 1/sqrt(x)
 }
 
-pub inline fn f_sqrt(x: f32) f32 {
+pub fn f_sqrt(x: f32) callconv(.Inline) f32 {
     // .ReleaseFast = 50-100x .Debug
     return switch (builtin.mode) {
         else => @sqrt(x),
         .ReleaseSafe, .ReleaseFast, .ReleaseSmall => a_sqrt(x),
     };
 }
-pub inline fn f_isqrt(x: f32) f32 {
+pub fn f_isqrt(x: f32) callconv(.Inline) f32 {
     // .ReleaseFast = 10-75x .Debug
     return switch (builtin.mode) {
         else => 1 / @sqrt(x),

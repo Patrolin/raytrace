@@ -11,7 +11,7 @@ pub fn build(b: *Builder) void {
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
-    //@setFloatMode(.Optimized); // does this work? does it matter?
+    //@setFloatMode(.Optimized); // do nothing
 
     // Time
     const time = b.addExecutable("time", "src/time.zig");
@@ -29,7 +29,7 @@ pub fn build(b: *Builder) void {
     time_step.dependOn(&time_cmd.step);
 
     // Run
-    const exe = b.addExecutable("raytrace", "src/main.zig");
+    const exe = b.addExecutable("raytrace", "src/raytrace.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
@@ -42,4 +42,15 @@ pub fn build(b: *Builder) void {
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    // WASM
+    const wasm = b.addStaticLibrary("main", "src/main.zig");
+    wasm.setTarget(std.zig.CrossTarget.parse(.{ .arch_os_abi = "wasm32-freestanding" }) catch unreachable);
+    wasm.setBuildMode(mode);
+    wasm.setOutputDir("zig-cache/bin");
+    //wasm.strip = true; // do nothing
+    wasm.install();
+
+    const wasm_step = b.step("wasm", "Build for WASM");
+    wasm_step.dependOn(&wasm.step);
 }
